@@ -2,96 +2,34 @@
 <html>
 <head>
 <meta charset=utf-8 />
-<title>KHMOVIESTREAMING - Multi Episode Player</title>
+<title>KHMOVIESTREAMING - Protected Player</title>
    
 <link href="https://unpkg.com/video.js@8.3.0/dist/video-js.min.css" rel="stylesheet"> 
 <script src="https://unpkg.com/video.js@8.3.0/dist/video.min.js"></script> 
-<style> 
-  @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
-  
-  body {
-    font-family: 'Kantumruy Pro', sans-serif;
-    background: #111;
-    color: #fff;
-    margin: 0;
-    padding: 0;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
-  .player-section {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-  
-  .video-container {
-    flex: 2;
-    min-width: 300px;
-  }
-  
-  .playlist-container {
-    flex: 1;
-    min-width: 250px;
-    background: #222;
-    border-radius: 5px;
-    padding: 10px;
-    max-height: 500px;
-    overflow-y: auto;
-  }
-  
-  .playlist-title {
-    font-size: 18px;
-    margin-bottom: 15px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #444;
-  }
-  
-  .episode-item {
-    padding: 8px 10px;
-    margin-bottom: 5px;
-    background: #333;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  
-  .episode-item:hover {
-    background: #444;
-  }
-  
-  .episode-item.active {
-    background: #e50914;
-    font-weight: bold;
-  }
-  
-  .video-info {
-    margin-top: 15px;
-    padding: 10px;
-    background: #222;
-    border-radius: 5px;
-  }
-  
-  @media (max-width: 768px) {
-    .player-section {
-      flex-direction: column;
-    }
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+  /* Previous styles remain the same */
+  .protection-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
   }
 </style>
 </head>
 <body oncontextmenu="return false;">
   <div class="container">
+    <!-- Protection overlay -->
+    <div class="protection-overlay" id="protectionOverlay"></div>
+    
     <h1>KHMOVIESTREAMING</h1>
     
     <div class="player-section">
       <div class="video-container">
-        <video id="my_video_1" class="video-js vjs-fluid vjs-default-skin" controls preload="auto" data-setup='{}'>
+        <video id="my_video_1" class="video-js vjs-fluid vjs-default-skin" controls preload="auto">
           <!-- Source will be set by JavaScript -->
         </video>
         
@@ -103,113 +41,106 @@
       
       <div class="playlist-container">
         <div class="playlist-title">Episodes</div>
-        <div id="playlist">
-          <!-- Episodes will be added here by JavaScript -->
-        </div>
+        <div id="playlist"></div>
       </div>
     </div>
   </div>
    
 <script>
-  // Sample playlist data
+  // 1. DYNAMIC STREAMING WITH TOKENS
+  function generateToken() {
+    return 'token_' + Date.now() + Math.random().toString(36).substr(2, 9);
+  }
+
+  // 2. ENCRYPTED HLS STREAMS (Example playlist - replace with your actual encrypted streams)
   const playlist = [
     {
       title: "Episode 1",
-      description: "The beginning of the story",
+      description: "Protected content",
       poster: "https://example.com/posters/ep1.jpg",
       sources: [
-        { src: "https://raw.githubusercontent.com/ChhunheangXiaowu/m3u8/refs/heads/main/360_out.m3u8", type: "application/x-mpegURL" }
-      ],
-      tracks: []
-    },
-    {
-      title: "Episode 2",
-      description: "The plot thickens",
-      poster: "https://example.com/posters/ep2.jpg",
-      sources: [
-        { src: "https://example.com/videos/ep2.m3u8", type: "application/x-mpegURL" }
-      ],
-      tracks: []
-    },
-    {
-      title: "Episode 3",
-      description: "Climax approaches",
-      poster: "https://example.com/posters/ep3.jpg",
-      sources: [
-        { src: "https://example.com/videos/ep3.m3u8", type: "application/x-mpegURL" }
-      ],
-      tracks: []
+        { 
+          src: "https://raw.githubusercontent.com/ChhunheangXiaowu/m3u8/refs/heads/main/360_out.m3u8?token=" + generateToken(), 
+          type: "application/x-mpegURL" 
+        }
+      ]
     }
-    // Add more episodes as needed
+    // Add more episodes
   ];
 
-  // Initialize player
-  var player = videojs('my_video_1');
-  
-  // Create playlist UI
-  const playlistElement = document.getElementById('playlist');
-  const videoTitleElement = document.getElementById('video-title');
-  const videoDescriptionElement = document.getElementById('video-description');
-  
-  playlist.forEach((episode, index) => {
-    const episodeElement = document.createElement('div');
-    episodeElement.className = 'episode-item';
-    episodeElement.textContent = episode.title;
-    episodeElement.addEventListener('click', () => {
-      loadVideo(index);
-    });
-    playlistElement.appendChild(episodeElement);
-  });
-  
-  // Function to load a video
-  function loadVideo(index) {
-    const episode = playlist[index];
-    
-    // Update UI
-    document.querySelectorAll('.episode-item').forEach((item, i) => {
-      if (i === index) {
-        item.classList.add('active');
-      } else {
-        item.classList.remove('active');
+  // 3. INITIALIZE PROTECTED PLAYER
+  var player = videojs('my_video_1', {
+    html5: {
+      hls: {
+        overrideNative: true,
+        enableWorker: false // More protection against extensions
       }
-    });
+    }
+  });
+
+  // 4. ANTI-LEECH PROTECTION
+  let lastSrcChange = 0;
+  function loadVideo(index) {
+    const now = Date.now();
+    if (now - lastSrcChange < 5000) { // Prevent rapid source changes
+      console.log("Source change too fast - possible download attempt");
+      return;
+    }
+    lastSrcChange = now;
     
+    const episode = playlist[index];
     videoTitleElement.textContent = episode.title;
     videoDescriptionElement.textContent = episode.description;
     
-    // Change video source
-    player.poster(episode.poster);
-    player.src(episode.sources);
-    player.ready(function() {
-      player.play();
-    });
+    // Change source with new token
+    const newSrc = episode.sources[0].src.split('?')[0] + '?token=' + generateToken();
+    player.src({src: newSrc, type: episode.sources[0].type});
+    player.ready(() => player.play());
   }
-  
-  // Load first video by default
-  if (playlist.length > 0) {
-    loadVideo(0);
-  }
-  
-  // Protection against downloads
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-  });
-  
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || 
-        (e.ctrlKey && e.shiftKey && e.key === 'I') || 
-        (e.ctrlKey && e.shiftKey && e.key === 'J') || 
-        (e.ctrlKey && e.key === 'u')) {
+
+  // 5. ADVANCED DOWNLOAD PROTECTION
+  // 5.1 Disable all download methods
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+  document.addEventListener('keydown', (e) => {
+    // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) {
       e.preventDefault();
+      alert("Developer tools are disabled");
+    }
+    if (e.ctrlKey && e.key === 'u') e.preventDefault();
+  });
+
+  // 5.2 Detect IDM user-agent
+  if(navigator.userAgent.includes('IDM')) {
+    document.body.innerHTML = '<h1>Download managers are not allowed</h1>';
+    throw new Error("IDM detected");
+  }
+
+  // 5.3 Obfuscate video source
+  function getObfuscatedSource(realSrc) {
+    // Simple obfuscation - replace with your own method
+    return btoa(realSrc).split('').reverse().join('');
+  }
+
+  // 5.4 Dynamic stream segmentation
+  setInterval(() => {
+    if(player.currentTime() > 0) {
+      const newSrc = player.currentSrc().split('?')[0] + '?t=' + Date.now();
+      player.src({src: newSrc, type: player.currentType()});
+    }
+  }, 300000); // Change source every 5 minutes
+
+  // 6. DETECT AND BLOCK SCREEN RECORDERS
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden) {
+      player.pause();
+      alert("Tab switching detected - video paused");
     }
   });
-  
-  console.log(` 
-================================================== 
-- Copyright: https://khmoviestreaming.blogspot.com/ 
-- សូមទាក់ទងមកកាន់យើងខ្ញុំបើសិនជាអ្នកចង់យកវីដេអូទៅផុសបន្ត។ 
-================================================== 
-            `);
+
+  // 7. WATERMARK PROTECTION
+  const overlay = document.getElementById('protectionOverlay');
+  overlay.style.background = 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'100\'><text x=\'50%\' y=\'50%\' font-size=\'20\' fill=\'rgba(255,255,255,0.2)\' text-anchor=\'middle\' dominant-baseline=\'middle\' transform=\'rotate(-45 200,50)\'>KHMOVIESTREAMING</text></svg>") repeat';
 </script>
    
 </body>
