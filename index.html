@@ -1,78 +1,201 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-<meta charset=utf-8 /> 
-<title>KHMOVIESTREAMING</title>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>KHMOVIESTREAMING - Multi Episode Player</title>
    
 <link href="https://unpkg.com/video.js@8.3.0/dist/video-js.min.css" rel="stylesheet"> 
 <script src="https://unpkg.com/video.js@8.3.0/dist/video.min.js"></script> 
 <style> 
-  .vjs-big-play-button { 
-    transform: translate(10%, -8%) !important; 
-  } 
-</style> 
- 
-<style> 
-  @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,400&display=swap'); 
-
-  .video-js .vjs-big-play-button { 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-  } 
-
-  .container { 
-    position: relative; 
-  } 
-
-  .title-container { 
-    position: absolute; 
-    top: 0; 
-    left: 50%; 
-    transform: translateX(-50%); 
-  } 
-
-  .title-container h4 { 
-    color: #fff; 
-    font-family: 'Kantumruy Pro', sans-serif; 
-    padding: 7px 15px; 
-    font-size: 24px; 
-  }
+  @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
   
-  /* Hide right-click context menu */
   body {
-    -webkit-touch-callout: none;
+    font-family: 'Kantumruy Pro', sans-serif;
+    background: #111;
+    color: #fff;
+    margin: 0;
+    padding: 0;
     -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
   }
-</style> 
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .player-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .video-container {
+    flex: 2;
+    min-width: 300px;
+  }
+  
+  .playlist-container {
+    flex: 1;
+    min-width: 250px;
+    background: #222;
+    border-radius: 5px;
+    padding: 10px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+  
+  .playlist-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #444;
+  }
+  
+  .episode-item {
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    background: #333;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .episode-item:hover {
+    background: #444;
+  }
+  
+  .episode-item.active {
+    background: #e50914;
+    font-weight: bold;
+  }
+  
+  .video-info {
+    margin-top: 15px;
+    padding: 10px;
+    background: #222;
+    border-radius: 5px;
+  }
+  
+  @media (max-width: 768px) {
+    .player-section {
+      flex-direction: column;
+    }
+  }
+</style>
+</head>
+<body oncontextmenu="return false;">
+  <div class="container">
+    <h1>KHMOVIESTREAMING</h1>
     
-</head> 
-<body oncontextmenu="return false;"> 
-  <div class="container"> 
-    <!-- Video --> 
-    <video id="my_video_1" class="video-js vjs-fluid vjs-default-skin" controls preload="auto" data-setup='{}' poster="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjbtwGxSLTwLwFgYmJI1VrPNffL6TIPWegw8FQl_c2jXEy_wUCmp3M0yJtMtMHyqhyo6Od8L0lNKQLG_n97CAeq30rh-KnqxmUawypRUeNKbsckbNRBvL2GyZdPpbFe6krpN5c023MAvaxbZorO_mDO6D2H8Gmeh8KZIsqGlaD0qKxQ8CqhrWWMPRisT_ey/s1080/song%20of%20desert.jpg"> 
-      <source src="https://raw.githubusercontent.com/ChhunheangXiaowu/m3u8/refs/heads/main/360_out.m3u8" type="application/x-mpegURL"> 
-    </video> 
- 
-    <!-- Title --> 
-    <div class="title-container"> 
-      <h4></h4> 
-    </div> 
-  </div> 
+    <div class="player-section">
+      <div class="video-container">
+        <video id="my_video_1" class="video-js vjs-fluid vjs-default-skin" controls preload="auto" data-setup='{}'>
+          <!-- Source will be set by JavaScript -->
+        </video>
+        
+        <div class="video-info">
+          <h2 id="video-title">Select an episode</h2>
+          <p id="video-description"></p>
+        </div>
+      </div>
+      
+      <div class="playlist-container">
+        <div class="playlist-title">Episodes</div>
+        <div id="playlist">
+          <!-- Episodes will be added here by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
    
-<script> 
-  // Disable right-click
+<script>
+  // Sample playlist data
+  const playlist = [
+    {
+      title: "Episode 1",
+      description: "The beginning of the story",
+      poster: "https://example.com/posters/ep1.jpg",
+      sources: [
+        { src: "https://raw.githubusercontent.com/ChhunheangXiaowu/m3u8/refs/heads/main/360_out.m3u8", type: "application/x-mpegURL" }
+      ],
+      tracks: []
+    },
+    {
+      title: "Episode 2",
+      description: "The plot thickens",
+      poster: "https://example.com/posters/ep2.jpg",
+      sources: [
+        { src: "https://example.com/videos/ep2.m3u8", type: "application/x-mpegURL" }
+      ],
+      tracks: []
+    },
+    {
+      title: "Episode 3",
+      description: "Climax approaches",
+      poster: "https://example.com/posters/ep3.jpg",
+      sources: [
+        { src: "https://example.com/videos/ep3.m3u8", type: "application/x-mpegURL" }
+      ],
+      tracks: []
+    }
+    // Add more episodes as needed
+  ];
+
+  // Initialize player
+  var player = videojs('my_video_1');
+  
+  // Create playlist UI
+  const playlistElement = document.getElementById('playlist');
+  const videoTitleElement = document.getElementById('video-title');
+  const videoDescriptionElement = document.getElementById('video-description');
+  
+  playlist.forEach((episode, index) => {
+    const episodeElement = document.createElement('div');
+    episodeElement.className = 'episode-item';
+    episodeElement.textContent = episode.title;
+    episodeElement.addEventListener('click', () => {
+      loadVideo(index);
+    });
+    playlistElement.appendChild(episodeElement);
+  });
+  
+  // Function to load a video
+  function loadVideo(index) {
+    const episode = playlist[index];
+    
+    // Update UI
+    document.querySelectorAll('.episode-item').forEach((item, i) => {
+      if (i === index) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+    
+    videoTitleElement.textContent = episode.title;
+    videoDescriptionElement.textContent = episode.description;
+    
+    // Change video source
+    player.poster(episode.poster);
+    player.src(episode.sources);
+    player.ready(function() {
+      player.play();
+    });
+  }
+  
+  // Load first video by default
+  if (playlist.length > 0) {
+    loadVideo(0);
+  }
+  
+  // Protection against downloads
   document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
   });
   
-  // Disable keyboard shortcuts
   document.addEventListener('keydown', function(e) {
-    // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
     if (e.key === 'F12' || 
         (e.ctrlKey && e.shiftKey && e.key === 'I') || 
         (e.ctrlKey && e.shiftKey && e.key === 'J') || 
@@ -80,40 +203,6 @@
       e.preventDefault();
     }
   });
-
-  // Dynamic token for stream (basic example)
-  function generateToken() {
-    return 'token_' + Date.now() + Math.random().toString(36).substr(2, 9);
-  }
-  
-  // Periodically change the source (optional)
-  setInterval(function() {
-    var newSrc = "https://raw.githubusercontent.com/ChhunheangXiaowu/m3u8/refs/heads/main/360_out.m3u8?t=" + generateToken();
-    player.src({type: 'application/x-mpegURL', src: newSrc});
-  }, 300000); // Change every 5 minutes
-
-  var title = document.querySelector('.title-container h4'); 
-  if(window.outerWidth < 585) { 
-    title.style.fontSize = '12px'; 
-  } 
-
-  if (window.outerWidth < 485) { 
-    title.style.fontSize = '10px'; 
-  } 
-
-  if (window.outerWidth < 385) { 
-    title.style.fontSize = '8px'; 
-  } 
-
-  var player = videojs('my_video_1');
-  
-  // Disable right-click on video element
-  player.on('contextmenu', function(e) {
-    e.preventDefault();
-    return false;
-  });
-  
-  player.play(); 
   
   console.log(` 
 ================================================== 
@@ -121,7 +210,7 @@
 - សូមទាក់ទងមកកាន់យើងខ្ញុំបើសិនជាអ្នកចង់យកវីដេអូទៅផុសបន្ត។ 
 ================================================== 
             `);
-</script> 
+</script>
    
-</body> 
+</body>
 </html>
