@@ -12,46 +12,50 @@
   } 
 </style> 
  
-  <style> 
-     
-    @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,400&display=swap'); 
- 
-    .video-js .vjs-big-play-button { 
-      top: 50%; 
-      left: 50%; 
-      transform: translate(-50%, -50%); 
-    } 
- 
-    .container { 
-      position: relative; 
-    } 
- 
-    .title-container { 
-      position: absolute; 
-      top: 0; 
-      left: 50%; 
-      transform: translateX(-50%); 
-    } 
- 
-    .title-container h4 { 
-      color: #fff; 
-      font-family: 'Kantumruy Pro', sans-serif; 
-      padding: 7px 15px; 
-      font-size: 24px; 
-    } 
- 
- 
-  </style> 
+<style> 
+  @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,400&display=swap'); 
+
+  .video-js .vjs-big-play-button { 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+  } 
+
+  .container { 
+    position: relative; 
+  } 
+
+  .title-container { 
+    position: absolute; 
+    top: 0; 
+    left: 50%; 
+    transform: translateX(-50%); 
+  } 
+
+  .title-container h4 { 
+    color: #fff; 
+    font-family: 'Kantumruy Pro', sans-serif; 
+    padding: 7px 15px; 
+    font-size: 24px; 
+  }
+  
+  /* Hide right-click context menu */
+  body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+</style> 
     
 </head> 
-<body> 
+<body oncontextmenu="return false;"> 
   <div class="container"> 
     <!-- Video --> 
     <video id="my_video_1" class="video-js vjs-fluid vjs-default-skin" controls preload="auto" data-setup='{}' poster="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjbtwGxSLTwLwFgYmJI1VrPNffL6TIPWegw8FQl_c2jXEy_wUCmp3M0yJtMtMHyqhyo6Od8L0lNKQLG_n97CAeq30rh-KnqxmUawypRUeNKbsckbNRBvL2GyZdPpbFe6krpN5c023MAvaxbZorO_mDO6D2H8Gmeh8KZIsqGlaD0qKxQ8CqhrWWMPRisT_ey/s1080/song%20of%20desert.jpg"> 
       <source src="https://raw.githubusercontent.com/ChhunheangXiaowu/m3u8/refs/heads/main/360_out.m3u8" type="application/x-mpegURL"> 
-
- <!--<track kind="captions" src="https://raw.githubusercontent.com/ChhunheangXiaowu/Bad-Boys-Ride-or-Die-2024/main/Bad.Boys.Ride.Or.Die.2024.1080p.WEBRip.10Bit.DDP5.1.X265-Asiimov.vtt" srclang="en" label="English" default> -->
-
     </video> 
  
     <!-- Title --> 
@@ -61,27 +65,62 @@
   </div> 
    
 <script> 
-    var title = document.querySelector('.title-container h4'); 
-    if(window.outerWidth < 585) { 
-      title.style.fontSize = '12px'; 
-    } 
- 
-    if (window.outerWidth < 485) { 
-      title.style.fontSize = '10px'; 
-    } 
- 
-    if (window.outerWidth < 385) { 
-      title.style.fontSize = '8px'; 
-    } 
- 
-  var player = videojs('my_video_1'}); 
+  // Disable right-click
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+  
+  // Disable keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+    // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+    if (e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+        (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+        (e.ctrlKey && e.key === 'u')) {
+      e.preventDefault();
+    }
+  });
+
+  // Dynamic token for stream (basic example)
+  function generateToken() {
+    return 'token_' + Date.now() + Math.random().toString(36).substr(2, 9);
+  }
+  
+  // Periodically change the source (optional)
+  setInterval(function() {
+    var newSrc = "https://raw.githubusercontent.com/ChhunheangXiaowu/m3u8/refs/heads/main/360_out.m3u8?t=" + generateToken();
+    player.src({type: 'application/x-mpegURL', src: newSrc});
+  }, 300000); // Change every 5 minutes
+
+  var title = document.querySelector('.title-container h4'); 
+  if(window.outerWidth < 585) { 
+    title.style.fontSize = '12px'; 
+  } 
+
+  if (window.outerWidth < 485) { 
+    title.style.fontSize = '10px'; 
+  } 
+
+  if (window.outerWidth < 385) { 
+    title.style.fontSize = '8px'; 
+  } 
+
+  var player = videojs('my_video_1');
+  
+  // Disable right-click on video element
+  player.on('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+  
   player.play(); 
+  
   console.log(` 
 ================================================== 
 - Copyright: https://khmoviestreaming.blogspot.com/ 
 - សូមទាក់ទងមកកាន់យើងខ្ញុំបើសិនជាអ្នកចង់យកវីដេអូទៅផុសបន្ត។ 
 ================================================== 
-            `) 
+            `);
 </script> 
    
 </body> 
